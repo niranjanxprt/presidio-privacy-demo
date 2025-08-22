@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microsoft Presidio - Privacy-First AI Development</title>
+    <meta name="description" content="Interactive demonstration of Microsoft Presidio's PII detection and anonymization for GDPR-compliant AI development by Niranjan Thimmappa">
+    <meta name="keywords" content="Microsoft Presidio, PII detection, GDPR compliance, AI privacy, data anonymization, Langfuse, LLM observability">
+    <meta name="author" content="Niranjan Thimmappa">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://niranjanxprt.github.io/presidio-privacy-demo/">
+    <meta property="og:title" content="Microsoft Presidio Privacy Demo - Interactive PII Detection">
+    <meta property="og:description" content="Professional demo showcasing Microsoft Presidio's capabilities for privacy-first AI development and GDPR compliance.">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://niranjanxprt.github.io/presidio-privacy-demo/">
+    <meta property="twitter:title" content="Microsoft Presidio Privacy Demo">
+    <meta property="twitter:description" content="Interactive demo for privacy-first AI development with Microsoft Presidio">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Tailwind config for CDN
+        tailwind = {
+            config: {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        },
+                        animation: {
+                            "fade-in": "fadeIn 0.5s ease-in-out",
+                            "slide-up": "slideUp 0.5s ease-out",
+                            "pulse-slow": "pulse 3s infinite",
+                            "bounce-subtle": "bounceSubtle 2s infinite",
+                        },
+                        keyframes: {
+                            fadeIn: {
+                                "0%": { opacity: "0", transform: "translateY(10px)" },
+                                "100%": { opacity: "1", transform: "translateY(0)" },
+                            },
+                            slideUp: {
+                                "0%": { opacity: "0", transform: "translateY(20px)" },
+                                "100%": { opacity: "1", transform: "translateY(0)" },
+                            },
+                            bounceSubtle: {
+                                "0%, 100%": { transform: "translateY(0)" },
+                                "50%": { transform: "translateY(-5px)" },
+                            },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --radius: 0.5rem;
+        }
+        
+        .bg-gradient-radial {
+            background: radial-gradient(ellipse at center, rgb(99 102 241 / 0.1) 0%, transparent 70%);
+        }
+        
+        .code-highlight {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .code-highlight::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            to {
+                left: 100%;
+            }
+        }
+        
+        .pii-detected {
+            background: linear-gradient(135deg, rgb(239 68 68), rgb(220 38 38));
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+        
+        .pii-anonymized {
+            background: linear-gradient(135deg, rgb(34 197 94), rgb(22 163 74));
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 font-sans">
+    <!-- Background Pattern -->
+    <div class="fixed inset-0 bg-gradient-radial pointer-events-none"></div>
+    
+    <!-- Header -->
+    <header class="relative z-10 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white text-sm">🛡️</span>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-gray-900">Microsoft Presidio</h1>
+                        <p class="text-xs text-gray-500">Privacy-First AI Development</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        <span class="mr-1">✅</span>
+                        GDPR Compliant
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span class="mr-1">📂</span>
+                        Open Source
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Hero Section -->
+        <div class="text-center mb-16 animate-fade-in">
+            <h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+                Intelligent PII Detection
+                <span class="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    & Anonymization
+                </span>
+            </h1>
+            <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+                Context-aware, pluggable, and customizable data protection framework for text, images, and structured data. 
+                Democratizing de-identification technologies for privacy-compliant AI development.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://github.com/microsoft/presidio" target="_blank" 
+                   class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-gray-900 hover:bg-gray-800 transition-colors">
+                    <span class="mr-2">📂</span>
+                    View on GitHub
+                </a>
+                <a href="https://microsoft.github.io/presidio/" target="_blank"
+                   class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <span class="mr-2">📖</span>
+                    Documentation
+                </a>
+            </div>
+        </div>
+
+        <!-- Interactive Demo -->
+        <div class="mb-16">
+            <div class="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                <div class="bg-gradient-to-r from-gray-50 to-blue-50 px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-2xl font-semibold text-gray-900 flex items-center">
+                        <span class="mr-3 text-blue-600">▶️</span>
+                        Live Demo: PII Detection Pipeline
+                    </h2>
+                    <p class="text-gray-600 mt-1">Real-time processing with Microsoft Presidio</p>
+                </div>
+                
+                <div class="p-6">
+                    <!-- Pipeline Visualization -->
+                    <div class="grid md:grid-cols-3 gap-6 mb-8">
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-gradient-to-r from-red-500 to-pink-500 rounded-xl flex items-center justify-center mx-auto mb-4 animate-bounce-subtle">
+                                <span class="text-2xl">📄</span>
+                            </div>
+                            <h3 class="font-semibold text-gray-900 mb-2">Raw Input</h3>
+                            <p class="text-sm text-gray-600">Contains sensitive PII data</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse-slow">
+                                <span class="text-2xl">🔍</span>
+                            </div>
+                            <h3 class="font-semibold text-gray-900 mb-2">Analysis</h3>
+                            <p class="text-sm text-gray-600">NLP + Pattern Recognition</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl">✅</span>
+                            </div>
+                            <h3 class="font-semibold text-gray-900 mb-2">Protected Output</h3>
+                            <p class="text-sm text-gray-600">GDPR-compliant data</p>
+                        </div>
+                    </div>
+
+                    <!-- Code Example -->
+                    <div class="space-y-6">
+                        <!-- Installation -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                <span class="mr-2">📥</span>
+                                Installation
+                            </h4>
+                            <div class="bg-gray-900 rounded-lg p-4 text-green-400 font-mono text-sm code-highlight">
+                                <div>$ pip install presidio-analyzer presidio-anonymizer</div>
+                                <div>$ python -m spacy download en_core_web_lg</div>
+                            </div>
+                        </div>
+
+                        <!-- Code Demo -->
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                <span class="mr-2">💻</span>
+                                Real Implementation
+                            </h4>
+                            <div class="bg-gray-900 rounded-lg p-4 text-sm font-mono">
+                                <pre class="text-gray-300"><code><span class="text-blue-400">from</span> <span class="text-green-400">presidio_analyzer</span> <span class="text-blue-400">import</span> <span class="text-yellow-400">AnalyzerEngine</span>
+<span class="text-blue-400">from</span> <span class="text-green-400">presidio_anonymizer</span> <span class="text-blue-400">import</span> <span class="text-yellow-400">AnonymizerEngine</span>
+
+<span class="text-gray-500"># Initialize engines</span>
+<span class="text-yellow-400">analyzer</span> = <span class="text-blue-400">AnalyzerEngine()</span>
+<span class="text-yellow-400">anonymizer</span> = <span class="text-blue-400">AnonymizerEngine()</span>
+
+<span class="text-gray-500"># Sample text with PII</span>
+<span class="text-yellow-400">text</span> = <span class="text-green-400">"My name is John Doe and my phone is 212-555-5555"</span>
+
+<span class="text-gray-500"># Analyze for PII</span>
+<span class="text-yellow-400">results</span> = <span class="text-yellow-400">analyzer</span>.<span class="text-blue-400">analyze</span>(<span class="text-yellow-400">text</span>=<span class="text-yellow-400">text</span>, <span class="text-yellow-400">language</span>=<span class="text-green-400">"en"</span>)
+
+<span class="text-gray-500"># Anonymize detected PII</span>
+<span class="text-yellow-400">anonymized</span> = <span class="text-yellow-400">anonymizer</span>.<span class="text-blue-400">anonymize</span>(<span class="text-yellow-400">text</span>=<span class="text-yellow-400">text</span>, <span class="text-yellow-400">analyzer_results</span>=<span class="text-yellow-400">results</span>)</code></pre>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <h5 class="font-semibold text-red-900 mb-2 flex items-center">
+                                    <span class="mr-2">⚠️</span>
+                                    Before (Raw Data)
+                                </h5>
+                                <p class="text-sm font-mono bg-white p-3 rounded border">
+                                    "My name is <span class="pii-detected">John Doe</span> and my phone is <span class="pii-detected">212-555-5555</span>"
+                                </p>
+                            </div>
+                            
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                <h5 class="font-semibold text-green-900 mb-2 flex items-center">
+                                    <span class="mr-2">✅</span>
+                                    After (Anonymized)
+                                </h5>
+                                <p class="text-sm font-mono bg-white p-3 rounded border">
+                                    "My name is <span class="pii-anonymized">[PERSON]</span> and my phone is <span class="pii-anonymized">[PHONE_NUMBER]</span>"
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 text-center mb-12">
+                Enterprise-Grade Privacy Protection
+            </h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow animate-slide-up">
+                    <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-xl">🧠</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">180+ Entity Types</h3>
+                    <p class="text-sm text-gray-600">Advanced NLP recognizes names, emails, credit cards, SSNs, and custom patterns across multiple languages.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow animate-slide-up" style="animation-delay: 0.1s">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-xl">🖼️</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Multi-Modal Support</h3>
+                    <p class="text-sm text-gray-600">Process text, images, PDFs, and DICOM medical images with OCR-powered PII detection.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow animate-slide-up" style="animation-delay: 0.2s">
+                    <div class="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-xl">⚙️</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Fully Customizable</h3>
+                    <p class="text-sm text-gray-600">Create custom recognizers, configure anonymization strategies, and integrate with external AI models.</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow animate-slide-up" style="animation-delay: 0.3s">
+                    <div class="w-12 h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mb-4">
+                        <span class="text-xl">⚡</span>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">Production Ready</h3>
+                    <p class="text-sm text-gray-600">Deploy via Python, Docker, Kubernetes, or PySpark for enterprise-scale data processing.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- GDPR + Langfuse Integration -->
+        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl text-white p-8 mb-16">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold mb-6 text-center">
+                    The Perfect Stack: Presidio + Langfuse + GDPR
+                </h2>
+                
+                <div class="grid md:grid-cols-3 gap-8 mb-8">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">🛡️</span>
+                        </div>
+                        <h3 class="font-semibold mb-2">Pre-Processing</h3>
+                        <p class="text-sm opacity-90">Presidio anonymizes training data before feeding into LLM pipelines</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">📊</span>
+                        </div>
+                        <h3 class="font-semibold mb-2">Monitoring</h3>
+                        <p class="text-sm opacity-90">Langfuse tracks model performance with privacy-safe observability</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mx-auto mb-4">
+                            <span class="text-2xl">✅</span>
+                        </div>
+                        <h3 class="font-semibold mb-2">Compliance</h3>
+                        <p class="text-sm opacity-90">Automated audit trails ensure GDPR data minimization principles</p>
+                    </div>
+                </div>
+
+                <div class="bg-white/10 rounded-lg p-6 backdrop-blur-sm">
+                    <h4 class="font-semibold mb-3 flex items-center">
+                        <span class="mr-2">❓</span>
+                        Discussion Question for LinkedIn
+                    </h4>
+                    <p class="text-sm opacity-90 leading-relaxed">
+                        "When using observability tools like Langfuse to monitor LLM training pipelines, how do you balance 
+                        detailed performance insights with GDPR's data minimization principle? Do you anonymize ALL training 
+                        data upfront with Presidio, or use dynamic masking strategies?"
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+            <div class="bg-white rounded-xl p-6 text-center shadow-lg border border-gray-200">
+                <div class="text-3xl font-bold text-blue-600 mb-2">180+</div>
+                <div class="text-sm text-gray-600">Entity Types</div>
+            </div>
+            <div class="bg-white rounded-xl p-6 text-center shadow-lg border border-gray-200">
+                <div class="text-3xl font-bold text-green-600 mb-2">95%+</div>
+                <div class="text-sm text-gray-600">Accuracy Rate</div>
+            </div>
+            <div class="bg-white rounded-xl p-6 text-center shadow-lg border border-gray-200">
+                <div class="text-3xl font-bold text-purple-600 mb-2">30+</div>
+                <div class="text-sm text-gray-600">Languages</div>
+            </div>
+            <div class="bg-white rounded-xl p-6 text-center shadow-lg border border-gray-200">
+                <div class="text-3xl font-bold text-orange-600 mb-2">MIT</div>
+                <div class="text-sm text-gray-600">Open Source</div>
+            </div>
+        </div>
+
+        <!-- Call to Action -->
+        <div class="text-center">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                Ready to Build Privacy-Compliant AI?
+            </h2>
+            <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+                Join thousands of developers using Microsoft Presidio to democratize de-identification 
+                technologies and build trustworthy AI applications.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="shareToLinkedIn()" 
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                    <span class="mr-2">📤</span>
+                    Share on LinkedIn
+                </button>
+                <button onclick="copyLink()"
+                        class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <span class="mr-2">🔗</span>
+                    Copy Link
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="font-semibold mb-4">Microsoft Presidio</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Context-aware, pluggable, and customizable data protection framework 
+                        for building privacy-compliant AI applications.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Resources</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="https://github.com/microsoft/presidio" class="text-gray-400 hover:text-white transition-colors">GitHub Repository</a></li>
+                        <li><a href="https://microsoft.github.io/presidio/" class="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="https://langfuse.com/" class="text-gray-400 hover:text-white transition-colors">Langfuse</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold mb-4">Compliance</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-3 py-1 bg-green-600 rounded-full text-xs">GDPR</span>
+                        <span class="px-3 py-1 bg-blue-600 rounded-full text-xs">HIPAA</span>
+                        <span class="px-3 py-1 bg-purple-600 rounded-full text-xs">SOC 2</span>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
+                <p>Created by <span class="text-white font-semibold">Niranjan Thimmappa</span> for the privacy-first AI community.</p>
+                <p class="mt-2">Built with Microsoft Presidio • Share responsibly</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Animated counters
+        function animateCounters() {
+            const counters = document.querySelectorAll('.text-3xl');
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent);
+                if (isNaN(target)) return;
+                
+                const increment = target / 50;
+                let current = 0;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = target + (counter.textContent.includes('+') ? '+' : '');
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current) + (counter.textContent.includes('+') ? '+' : '');
+                    }
+                }, 50);
+            });
+        }
+
+        // Share to LinkedIn
+        function shareToLinkedIn() {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent("🛡️ Privacy-First AI: Exploring Microsoft Presidio for GDPR-compliant LLM development. How do you balance observability with data minimization in your AI pipelines? #GDPR #DataPrivacy #LLM #AI #Presidio");
+            window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}&summary=${text}`, '_blank');
+        }
+
+        // Copy link to clipboard
+        async function copyLink() {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                // Visual feedback
+                const button = event.target.closest('button');
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<span class="mr-2">✅</span>Copied!';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = window.location.href;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                const button = event.target.closest('button');
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<span class="mr-2">✅</span>Copied!';
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                }, 2000);
+            }
+        }
+
+        // Initialize animations on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in');
+                    if (entry.target.querySelector('.text-3xl')) {
+                        setTimeout(animateCounters, 500);
+                    }
+                }
+            });
+        }, observerOptions);
+
+        // Add loading state management
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('loaded');
+            
+            // Stagger animations
+            const elements = document.querySelectorAll('.animate-slide-up');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            // Observe elements for animation
+            document.querySelectorAll('.bg-white, .grid > div').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Trigger counter animation for visible elements
+            setTimeout(animateCounters, 1000);
+        });
+    </script>
+</body>
+</html>
